@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LojaTI | Clientes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">Loja<span>TI</span></div>
+        <p>Sistema de gerenciamento de clientes</p>
+    </header>
+
+    <main>
+        <section class="apresentacao">
+            <h1>Cadastro de Clientes</h1>
+            <p>Gerencie os clientes da sua loja em um só lugar.</p>
+        </section>
+
+        <section class="card">
+            <h2>Novo cliente</h2>
+            <p class="descricao">Preencha os campos abaixo para cadastrar.</p>
+
+            <form action="../back/index.php?rota=clientes/create" method="POST">
+                <div class="campo">
+                    <label for="Nome">Nome completo</label>
+                    <input
+                        type="text"
+                        id="Nome"
+                        name="Nome"
+                        placeholder="Digite o nome do cliente"
+                        maxlength="100"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="Email">E-mail</label>
+                    <input
+                        type="email"
+                        id="Email"
+                        name="Email"
+                        placeholder="cliente@email.com"
+                        maxlength="100"
+                        required
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="Telefone">Telefone</label>
+                    <input
+                        type="text"
+                        id="Telefone"
+                        name="Telefone"
+                        placeholder="Digite o telefone"
+                        maxlength="15"
+                    >
+                </div>
+
+                <div class="campo">
+                    <label for="Endereco">Endereço</label>
+                    <input
+                        type="text"
+                        id="Endereco"
+                        name="Endereco"
+                        placeholder="Rua, número e bairro"
+                        maxlength="100"
+                    >
+                </div>
+
+                <button type="submit" class="botao">
+                    Cadastrar cliente
+                </button>
+            </form>
+        </section>
+
+        <section class="card lista-card">
+            <div class="titulo-lista">
+                <div>
+                    <h2>Clientes cadastrados</h2>
+                    <p class="descricao">Consulte os clientes registrados no sistema.</p>
+                </div>
+
+                <button type="button" class="botao-listar" onclick="listarClientes()">
+                    Atualizar lista
+                </button>
+            </div>
+
+            <p id="mensagem" role="status"></p>
+
+            <div class="tabela-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>E-mail</th>
+                            <th>Telefone</th>
+                            <th>Endereço</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-clientes">
+                        <tr>
+                            <td colspan="5" class="vazio">
+                                Clique em "Atualizar lista" para consultar os clientes.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>LojaTI &copy; 2026 — Sistema de gerenciamento de clientes</p>
+    </footer>
+
+    <script>
+        async function listarClientes() {
+            const tabela = document.getElementById("tabela-clientes");
+            const mensagem = document.getElementById("mensagem");
+
+            mensagem.textContent = "Carregando clientes...";
+            tabela.innerHTML = "";
+
+            try {
+                const resposta = await fetch(
+                    "../back/index.php?rota=clientes"
+                );
+
+                if (!resposta.ok) {
+                    throw new Error("Não foi possível consultar os clientes.");
+                }
+
+                const clientes = await resposta.json();
+
+                if (!Array.isArray(clientes)) {
+                    throw new Error("A API não retornou uma lista válida.");
+                }
+
+                if (clientes.length === 0) {
+                    tabela.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="vazio">
+                                Nenhum cliente cadastrado.
+                            </td>
+                        </tr>
+                    `;
+
+                    mensagem.textContent = "";
+                    return;
+                }
+
+                clientes.forEach(cliente => {
+                    const linha = document.createElement("tr");
+
+                    [
+                        cliente.ClienteID,
+                        cliente.Nome,
+                        cliente.Email,
+                        cliente.Telefone,
+                        cliente.Endereco
+                    ].forEach(valor => {
+                        const celula = document.createElement("td");
+                        celula.textContent = valor || "-";
+                        linha.appendChild(celula);
+                    });
+
+                    tabela.appendChild(linha);
+                });
+
+                mensagem.textContent =
+                    clientes.length + " cliente(s) encontrado(s).";
+
+            } catch (erro) {
+                mensagem.textContent =
+                    "Erro ao carregar clientes. Verifique se o Laragon está ativo e tente novamente.";
+            }
+        }
+    </script>
+
+</body>
+</html>
